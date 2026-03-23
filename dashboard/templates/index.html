@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trading Bot Dashboard</title>
+    <!-- Chart.js from CDN — a JavaScript library for drawing charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* ================================================================
+           DARK THEME TRADING TERMINAL STYLES
+           All CSS is inline (no external files) so the dashboard is
+           completely self-contained.
+           ================================================================ */
+
+        /* Reset & base */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #1a1a2e;
+            color: #e0e0e0;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* --- Top Navigation Bar --- */
+        .top-bar {
+            background: linear-gradient(135deg, #16213e 0%, #0f3460 100%);
+            padding: 14px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #00ff8833;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .bot-name {
+            font-size: 22px;
+            font-weight: 700;
+            color: #00ff88;
+            letter-spacing: 1px;
+        }
+
+        .bot-name span {
+            color: #e0e0e0;
+            font-weight: 400;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+
+        .top-bar-right {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .elo-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #1a1a2e;
+            padding: 6px 16px;
+            border-radius: 20px;
+            border: 1px solid #ffffff22;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .elo-badge .elo-number {
+            color: #ffd700;
+            font-size: 16px;
+        }
+
+        .market-status {
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .market-open {
+            background: #00ff8822;
+            color: #00ff88;
+            border: 1px solid #00ff8844;
+        }
+
+        .market-closed {
+            background: #ff444422;
+            color: #ff4444;
+            border: 1px solid #ff444444;
+        }
+
+        /* --- Main Content Area --- */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        /* --- Stat Cards Row --- */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: #16213e;
+            border-radius: 12px;
+            padding: 20px 24px;
+            border: 1px solid #ffffff11;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            border-color: #00ff8844;
+        }
+
+        .stat-card .label {
+            font-size: 12px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 6px;
+        }
+
+        .stat-card .value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #e0e0e0;
+        }
+
+        .stat-card .sub {
+            font-size: 12px;
+            color: #888;
+            margin-top: 4px;
+        }
+
+        .positive { color: #00ff88 !important; }
+        .negative { color: #ff4444 !important; }
+
+        /* --- ELO Section --- */
+        .elo-section {
+            background: #16213e;
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            border: 1px solid #ffffff11;
+        }
+
+        .elo-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .elo-header h3 {
+            font-size: 14px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        .elo-details {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .elo-rating-large {
+            font-size: 36px;
+            font-weight: 700;
+        }
+
+        .elo-rank-name {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .elo-next {
+            font-size: 12px;
+            color: #888;
+            margin-top: 4px;
+        }
+
+        .elo-progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #1a1a2e;
+            border-radius: 4px;
+            margin-top: 12px;
+            overflow: hidden;
+        }
+
+        .elo-progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        /* --- Strategy & Market Info Row --- */
+        .info-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .info-card {
+            background: #16213e;
+            border-radius: 12px;
+            padding: 16px 24px;
+            border: 1px solid #ffffff11;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .info-card .info-icon {
+            font-size: 28px;
+        }
+
+        .info-card .info-label {
+            font-size: 12px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .info-card .info-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: #00ff88;
+            text-transform: capitalize;
+        }
+
+        /* --- Charts Row --- */
+        .charts-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .chart-card {
+            background: #16213e;
+            border-radius: 12px;
+            padding: 20px 24px;
+            border: 1px solid #ffffff11;
+        }
+
+        .chart-card h3 {
+            font-size: 14px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 16px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 250px;
+        }
+
+        /* --- Tables --- */
+        .table-card {
+            background: #16213e;
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            border: 1px solid #ffffff11;
+        }
+
+        .table-card h3 {
+            font-size: 14px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 16px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 10px 12px;
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid #ffffff11;
+        }
+
+        td {
+            padding: 10px 12px;
+            font-size: 14px;
+            border-bottom: 1px solid #ffffff08;
+        }
+
+        tr:hover {
+            background: #1a1a2e;
+        }
+
+        .mono {
+            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+        }
+
+        /* --- Panic Button --- */
+        .panic-section {
+            text-align: center;
+            padding: 32px;
+        }
+
+        .panic-button {
+            background: linear-gradient(135deg, #ff4444, #cc0000);
+            color: white;
+            border: none;
+            padding: 16px 48px;
+            font-size: 18px;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            transition: transform 0.1s, box-shadow 0.2s;
+            box-shadow: 0 4px 20px #ff444444;
+        }
+
+        .panic-button:hover {
+            transform: scale(1.03);
+            box-shadow: 0 6px 30px #ff444466;
+        }
+
+        .panic-button:active {
+            transform: scale(0.97);
+        }
+
+        .panic-button:disabled {
+            background: #444;
+            box-shadow: none;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .panic-warning {
+            color: #888;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+
+        /* --- Last Updated Footer --- */
+        .last-updated {
+            text-align: center;
+            color: #555;
+            font-size: 12px;
+            padding: 16px;
+        }
+
+        .pulse {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #00ff88;
+            border-radius: 50%;
+            margin-right: 6px;
+            animation: pulse-anim 2s infinite;
+        }
+
+        @keyframes pulse-anim {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* --- Empty state --- */
+        .empty-state {
+            text-align: center;
+            color: #555;
+            padding: 32px;
+            font-style: italic;
+        }
+
+        /* --- Responsive --- */
+        @media (max-width: 900px) {
+            .stats-row { grid-template-columns: repeat(2, 1fr); }
+            .charts-row { grid-template-columns: 1fr; }
+            .info-row { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 500px) {
+            .stats-row { grid-template-columns: 1fr; }
+            .top-bar { flex-direction: column; gap: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ============================================================
+         TOP BAR — Bot name, ELO badge, market status
+         ============================================================ -->
+    <div class="top-bar">
+        <div class="bot-name">
+            TRADING BOT <span>live dashboard</span>
+        </div>
+        <div class="top-bar-right">
+            <div class="elo-badge" id="elo-badge">
+                <span id="elo-icon">🥇</span>
+                <span id="elo-rank-text">Gold</span>
+                <span class="elo-number" id="elo-badge-number">1247</span>
+            </div>
+            <div class="market-status market-closed" id="market-status">
+                MARKET CLOSED
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+
+        <!-- ============================================================
+             ROW 1 — Stat Cards: Equity, Daily P&L, Daily Target, Win Rate
+             ============================================================ -->
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="label">Equity</div>
+                <div class="value" id="equity">$0.00</div>
+                <div class="sub" id="cash-info">Cash: $0.00</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Daily P&L</div>
+                <div class="value" id="daily-pnl">$0.00</div>
+                <div class="sub" id="daily-pnl-pct">0.00%</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Daily Target</div>
+                <div class="value" id="daily-target">$100.00</div>
+                <div class="sub" id="trade-count">Trades today: 0</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Win Rate</div>
+                <div class="value" id="win-rate">0%</div>
+                <div class="sub" id="can-trade-status">Ready to trade</div>
+            </div>
+        </div>
+
+        <!-- ============================================================
+             ELO RATING — Rating, rank, progress bar
+             ============================================================ -->
+        <div class="elo-section">
+            <div class="elo-header">
+                <h3>ELO Performance Rating</h3>
+            </div>
+            <div class="elo-details">
+                <div>
+                    <div class="elo-rating-large" id="elo-rating">1000</div>
+                </div>
+                <div>
+                    <div class="elo-rank-name" id="elo-rank-name">Silver</div>
+                    <div class="elo-next" id="elo-next-info">300 points to Gold</div>
+                </div>
+            </div>
+            <div class="elo-progress-bar">
+                <div class="elo-progress-fill" id="elo-progress" style="width: 50%; background: #c0c0c0;"></div>
+            </div>
+        </div>
+
+        <!-- ============================================================
+             Strategy & Market Condition Info
+             ============================================================ -->
+        <div class="info-row">
+            <div class="info-card">
+                <div class="info-icon">📊</div>
+                <div>
+                    <div class="info-label">Market Condition</div>
+                    <div class="info-value" id="market-condition">Unknown</div>
+                </div>
+            </div>
+            <div class="info-card">
+                <div class="info-icon">🎯</div>
+                <div>
+                    <div class="info-label">Active Strategy</div>
+                    <div class="info-value" id="active-strategy">None</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================
+             ROW 2 — Charts: Equity Curve + ELO History
+             ============================================================ -->
+        <div class="charts-row">
+            <div class="chart-card">
+                <h3>Equity Curve</h3>
+                <div class="chart-container">
+                    <canvas id="equity-chart"></canvas>
+                </div>
+            </div>
+            <div class="chart-card">
+                <h3>ELO Rating History</h3>
+                <div class="chart-container">
+                    <canvas id="elo-chart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================
+             ROW 3 — Open Positions Table
+             ============================================================ -->
+        <div class="table-card">
+            <h3>Open Positions</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Symbol</th>
+                        <th>Qty</th>
+                        <th>Entry Price</th>
+                        <th>Current Price</th>
+                        <th>Unrealized P&L</th>
+                        <th>% Change</th>
+                    </tr>
+                </thead>
+                <tbody id="positions-body">
+                    <tr><td colspan="6" class="empty-state">No open positions</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ============================================================
+             ROW 4 — Recent Trades Log
+             ============================================================ -->
+        <div class="table-card">
+            <h3>Recent Trades</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Symbol</th>
+                        <th>Action</th>
+                        <th>Qty</th>
+                        <th>Price</th>
+                        <th>Strategy</th>
+                        <th>P&L</th>
+                    </tr>
+                </thead>
+                <tbody id="trades-body">
+                    <tr><td colspan="7" class="empty-state">No trades yet</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ============================================================
+             PANIC BUTTON — Close All Positions
+             ============================================================ -->
+        <div class="panic-section">
+            <button class="panic-button" id="panic-btn" onclick="triggerPanic()">
+                CLOSE ALL POSITIONS
+            </button>
+            <div class="panic-warning">
+                This will immediately close all open positions at market price.
+            </div>
+        </div>
+
+        <!-- Last Updated Indicator -->
+        <div class="last-updated">
+            <span class="pulse"></span>
+            Auto-refreshing every 10 seconds &mdash; Last updated: <span id="last-updated">never</span>
+        </div>
+
+    </div>
+
+    <!-- ================================================================
+         JAVASCRIPT — Dashboard Logic
+         ================================================================
+         This script handles:
+         1. Fetching bot state from the API every 10 seconds
+         2. Updating all DOM elements with fresh data
+         3. Drawing and updating Chart.js charts
+         4. Handling the panic button click
+         ================================================================ -->
+    <script>
+        // ============================================================
+        // CHART SETUP
+        // ============================================================
+        // Chart.js needs a <canvas> element and a configuration object.
+        // We create the charts once, then update their data on each refresh.
+
+        // --- Equity Curve Chart ---
+        // Shows account value over time as a line chart.
+        const equityCtx = document.getElementById('equity-chart').getContext('2d');
+        const equityChart = new Chart(equityCtx, {
+            type: 'line',
+            data: {
+                labels: [],      // X-axis: dates
+                datasets: [{
+                    label: 'Equity',
+                    data: [],    // Y-axis: equity values
+                    borderColor: '#00ff88',
+                    backgroundColor: 'rgba(0, 255, 136, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.3,           // Smooth curves
+                    pointRadius: 3,
+                    pointBackgroundColor: '#00ff88',
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                },
+                scales: {
+                    x: {
+                        ticks: { color: '#666', font: { size: 10 } },
+                        grid: { color: '#ffffff08' },
+                    },
+                    y: {
+                        ticks: {
+                            color: '#666',
+                            font: { size: 10 },
+                            callback: function(val) { return '$' + val.toLocaleString(); }
+                        },
+                        grid: { color: '#ffffff08' },
+                    }
+                }
+            }
+        });
+
+        // --- ELO Rating History Chart ---
+        // Shows how the bot's ELO rating has changed over time.
+        const eloCtx = document.getElementById('elo-chart').getContext('2d');
+        const eloChart = new Chart(eloCtx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'ELO Rating',
+                    data: [],
+                    borderColor: '#ffd700',
+                    backgroundColor: 'rgba(255, 215, 0, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.3,
+                    pointRadius: 3,
+                    pointBackgroundColor: '#ffd700',
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                },
+                scales: {
+                    x: {
+                        ticks: { color: '#666', font: { size: 10 } },
+                        grid: { color: '#ffffff08' },
+                    },
+                    y: {
+                        ticks: { color: '#666', font: { size: 10 } },
+                        grid: { color: '#ffffff08' },
+                    }
+                }
+            }
+        });
+
+
+        // ============================================================
+        // HELPER FUNCTIONS
+        // ============================================================
+
+        /**
+         * Format a number as a dollar amount with commas.
+         * Example: 102450 => "$102,450.00"
+         */
+        function formatMoney(amount) {
+            const sign = amount < 0 ? '-' : '';
+            return sign + '$' + Math.abs(amount).toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+
+        /**
+         * Return a CSS class name based on whether a value is positive or negative.
+         * Positive => green ("positive"), Negative => red ("negative").
+         */
+        function pnlClass(value) {
+            if (value > 0) return 'positive';
+            if (value < 0) return 'negative';
+            return '';
+        }
+
+
+        // ============================================================
+        // UPDATE FUNCTIONS — called on each auto-refresh
+        // ============================================================
+        // These functions take the JSON data from /api/status and update
+        // the corresponding HTML elements on the page.
+
+        /**
+         * Update the top bar: ELO badge and market open/closed status.
+         */
+        function updateTopBar(data) {
+            // ELO badge in the top bar
+            const eloInfo = data.elo_rank_info || {};
+            document.getElementById('elo-icon').textContent = eloInfo.icon || '?';
+            document.getElementById('elo-rank-text').textContent = eloInfo.name || 'Unranked';
+            document.getElementById('elo-badge-number').textContent = data.elo_rating || 0;
+
+            // Market open/closed indicator
+            const statusEl = document.getElementById('market-status');
+            if (data.market_open) {
+                statusEl.textContent = 'MARKET OPEN';
+                statusEl.className = 'market-status market-open';
+            } else {
+                statusEl.textContent = 'MARKET CLOSED';
+                statusEl.className = 'market-status market-closed';
+            }
+        }
+
+        /**
+         * Update the four stat cards: Equity, P&L, Target, Win Rate.
+         */
+        function updateStatCards(data) {
+            // Equity card
+            document.getElementById('equity').textContent = formatMoney(data.equity || 0);
+            document.getElementById('cash-info').textContent = 'Cash: ' + formatMoney(data.cash || 0) + ' | BP: ' + formatMoney(data.buying_power || 0);
+
+            // Daily P&L card
+            const pnl = data.daily_pnl || 0;
+            const pnlEl = document.getElementById('daily-pnl');
+            pnlEl.textContent = formatMoney(pnl);
+            pnlEl.className = 'value ' + pnlClass(pnl);
+            const pctEl = document.getElementById('daily-pnl-pct');
+            const pct = data.daily_pnl_pct || 0;
+            pctEl.textContent = (pct >= 0 ? '+' : '') + pct.toFixed(2) + '%';
+            pctEl.className = 'sub ' + pnlClass(pct);
+
+            // Daily target card
+            document.getElementById('daily-target').textContent = formatMoney(data.daily_target || 100);
+            document.getElementById('trade-count').textContent = 'Trades today: ' + (data.trade_count || 0);
+
+            // Win rate card
+            document.getElementById('win-rate').textContent = (data.win_rate || 0).toFixed(1) + '%';
+            const canTradeEl = document.getElementById('can-trade-status');
+            if (data.can_trade) {
+                canTradeEl.textContent = 'Ready to trade';
+                canTradeEl.className = 'sub positive';
+            } else {
+                canTradeEl.textContent = 'Trading paused';
+                canTradeEl.className = 'sub negative';
+            }
+        }
+
+        /**
+         * Update the ELO rating section: rating number, rank name,
+         * progress bar, and color.
+         */
+        function updateEloSection(data) {
+            const eloInfo = data.elo_rank_info || {};
+            const rating = data.elo_rating || 1000;
+
+            // Rating number with rank color
+            const ratingEl = document.getElementById('elo-rating');
+            ratingEl.textContent = rating;
+            ratingEl.style.color = eloInfo.color || '#c0c0c0';
+
+            // Rank name with icon
+            document.getElementById('elo-rank-name').textContent =
+                (eloInfo.icon || '') + ' ' + (eloInfo.name || 'Unranked');
+            document.getElementById('elo-rank-name').style.color = eloInfo.color || '#c0c0c0';
+
+            // "X points to next rank" text
+            const nextInfo = document.getElementById('elo-next-info');
+            if (eloInfo.next_rank === 'MAX') {
+                nextInfo.textContent = 'Maximum rank achieved!';
+            } else {
+                nextInfo.textContent = (eloInfo.rating_to_next || 0) + ' points to ' + (eloInfo.next_rank || '?');
+            }
+
+            // Progress bar fill width and color
+            const progressEl = document.getElementById('elo-progress');
+            progressEl.style.width = ((eloInfo.progress || 0) * 100) + '%';
+            progressEl.style.background = eloInfo.color || '#c0c0c0';
+        }
+
+        /**
+         * Update the market condition and active strategy cards.
+         */
+        function updateInfoCards(data) {
+            document.getElementById('market-condition').textContent =
+                (data.market_condition || 'unknown').replace('_', ' ');
+            document.getElementById('active-strategy').textContent =
+                (data.active_strategy || 'none').replace('_', ' ');
+        }
+
+        /**
+         * Update the open positions table.
+         * Builds HTML rows dynamically from the positions array.
+         */
+        function updatePositions(data) {
+            const tbody = document.getElementById('positions-body');
+            const positions = data.positions || [];
+
+            if (positions.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No open positions</td></tr>';
+                return;
+            }
+
+            // Build a table row for each position
+            let html = '';
+            positions.forEach(function(pos) {
+                const pl = pos.unrealized_pl || 0;
+                const changePct = pos.change_pct || 0;
+                html += '<tr>' +
+                    '<td class="mono" style="font-weight:600;color:#00ff88;">' + pos.symbol + '</td>' +
+                    '<td class="mono">' + pos.qty + '</td>' +
+                    '<td class="mono">' + formatMoney(pos.entry_price || 0) + '</td>' +
+                    '<td class="mono">' + formatMoney(pos.current_price || 0) + '</td>' +
+                    '<td class="mono ' + pnlClass(pl) + '">' + formatMoney(pl) + '</td>' +
+                    '<td class="mono ' + pnlClass(changePct) + '">' + (changePct >= 0 ? '+' : '') + changePct.toFixed(2) + '%</td>' +
+                    '</tr>';
+            });
+            tbody.innerHTML = html;
+        }
+
+        /**
+         * Update the recent trades log table.
+         * Shows the last 20 trades with timestamps and P&L.
+         */
+        function updateTrades(data) {
+            const tbody = document.getElementById('trades-body');
+            const trades = (data.recent_trades || []).slice(-20);  // Keep last 20
+
+            if (trades.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No trades yet</td></tr>';
+                return;
+            }
+
+            // Build rows in reverse order (newest first)
+            let html = '';
+            for (let i = trades.length - 1; i >= 0; i--) {
+                const t = trades[i];
+                const actionColor = t.action === 'BUY' ? '#00ff88' : '#ff4444';
+                const pnlText = t.pnl !== null && t.pnl !== undefined
+                    ? formatMoney(t.pnl)
+                    : '<span style="color:#555;">--</span>';
+                const pnlColorClass = (t.pnl !== null && t.pnl !== undefined) ? pnlClass(t.pnl) : '';
+
+                html += '<tr>' +
+                    '<td class="mono" style="color:#888;">' + (t.time || '') + '</td>' +
+                    '<td class="mono" style="font-weight:600;color:#00ff88;">' + (t.symbol || '') + '</td>' +
+                    '<td style="color:' + actionColor + ';font-weight:600;">' + (t.action || '') + '</td>' +
+                    '<td class="mono">' + (t.qty || '') + '</td>' +
+                    '<td class="mono">' + formatMoney(t.price || 0) + '</td>' +
+                    '<td style="color:#888;">' + (t.strategy || '').replace('_', ' ') + '</td>' +
+                    '<td class="mono ' + pnlColorClass + '">' + pnlText + '</td>' +
+                    '</tr>';
+            }
+            tbody.innerHTML = html;
+        }
+
+        /**
+         * Update both charts with new data from the equity history endpoint.
+         * We only redraw the charts if the data has changed (different length).
+         */
+        function updateCharts(data) {
+            // Equity curve
+            const eqHist = data.equity_history || [];
+            equityChart.data.labels = eqHist.map(function(d) { return d.date; });
+            equityChart.data.datasets[0].data = eqHist.map(function(d) { return d.equity; });
+            equityChart.update();
+
+            // ELO history
+            const eloHist = data.elo_history || [];
+            eloChart.data.labels = eloHist.map(function(d) { return d.date; });
+            eloChart.data.datasets[0].data = eloHist.map(function(d) { return d.rating; });
+            eloChart.update();
+        }
+
+
+        // ============================================================
+        // AUTO-REFRESH LOGIC
+        // ============================================================
+        // The dashboard polls the server every 10 seconds for fresh data.
+        //
+        // How it works:
+        //   1. fetchStatus() sends a GET request to /api/status using fetch()
+        //   2. The server returns JSON with all bot state
+        //   3. We parse the JSON and call each update function
+        //   4. setInterval() calls fetchStatus() every 10,000 milliseconds
+        //
+        // Why polling instead of WebSockets?
+        //   Polling is simpler to understand and implement. For a dashboard
+        //   that updates every 10 seconds, the overhead is negligible.
+        //   WebSockets would be better for sub-second updates.
+
+        /**
+         * Fetch the latest bot state from the API and update the entire page.
+         * This is the core refresh function that runs every 10 seconds.
+         */
+        function fetchStatus() {
+            // fetch() sends an HTTP request and returns a Promise.
+            // A Promise is JavaScript's way of handling operations that
+            // take time (like network requests). .then() runs when
+            // the request completes successfully.
+            fetch('/api/status')
+                .then(function(response) {
+                    // response.json() parses the JSON text into a JS object
+                    return response.json();
+                })
+                .then(function(data) {
+                    // Update every section of the dashboard with fresh data
+                    updateTopBar(data);
+                    updateStatCards(data);
+                    updateEloSection(data);
+                    updateInfoCards(data);
+                    updatePositions(data);
+                    updateTrades(data);
+                    updateCharts(data);
+
+                    // Show when the data was last updated
+                    document.getElementById('last-updated').textContent =
+                        new Date().toLocaleTimeString();
+                })
+                .catch(function(error) {
+                    // If the fetch fails (server down, network error), log it
+                    // but don't crash. The next refresh will try again.
+                    console.error('Failed to fetch bot status:', error);
+                    document.getElementById('last-updated').textContent =
+                        'connection error';
+                });
+        }
+
+        // --- Initial fetch when the page first loads ---
+        // Don't wait 10 seconds for the first data — load it immediately.
+        fetchStatus();
+
+        // --- Set up the recurring auto-refresh timer ---
+        // setInterval() calls a function repeatedly at a fixed interval.
+        // 10000 milliseconds = 10 seconds.
+        setInterval(fetchStatus, 10000);
+
+
+        // ============================================================
+        // PANIC BUTTON HANDLER
+        // ============================================================
+
+        /**
+         * Send a POST request to close all positions.
+         * Called when the user clicks the red "CLOSE ALL POSITIONS" button.
+         *
+         * This sends a POST request (not GET) because it triggers an action
+         * that changes state on the server. GET is for reading data,
+         * POST is for performing actions.
+         */
+        function triggerPanic() {
+            // Confirm with the user — this is a destructive action
+            if (!confirm('Are you sure you want to close ALL positions at market price?')) {
+                return;
+            }
+
+            const btn = document.getElementById('panic-btn');
+            btn.disabled = true;
+            btn.textContent = 'CLOSING POSITIONS...';
+
+            fetch('/api/override', {
+                method: 'POST',                              // POST = action, not read
+                headers: { 'Content-Type': 'application/json' },
+            })
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
+                btn.textContent = 'OVERRIDE SENT';
+                btn.style.background = '#444';
+                alert('Override triggered: ' + data.message);
+
+                // Re-enable after 5 seconds so the user can click again if needed
+                setTimeout(function() {
+                    btn.disabled = false;
+                    btn.textContent = 'CLOSE ALL POSITIONS';
+                    btn.style.background = '';
+                }, 5000);
+
+                // Refresh the page data immediately to show the result
+                fetchStatus();
+            })
+            .catch(function(error) {
+                btn.disabled = false;
+                btn.textContent = 'CLOSE ALL POSITIONS';
+                alert('Failed to trigger override: ' + error);
+            });
+        }
+    </script>
+
+</body>
+</html>

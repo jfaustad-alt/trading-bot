@@ -1,0 +1,371 @@
+/* Analysis page styles */
+
+.analysis-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+/* Source toggle (Live / Backtest) */
+.source-toggle {
+  display: flex;
+  gap: 4px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 3px;
+}
+
+.toggle-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: calc(var(--radius) - 2px);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.toggle-btn:hover {
+  color: var(--text);
+}
+
+.toggle-active {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* Strategy cards */
+.strategy-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.strategy-card {
+  padding: 14px 16px;
+}
+
+.strategy-name {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: var(--text);
+}
+
+.strategy-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 16px;
+}
+
+.strategy-stats > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Heatmap table */
+.heatmap-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.heatmap-table th {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  padding: 8px 10px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.heatmap-table td {
+  padding: 8px 10px;
+  text-align: center;
+  border-top: 1px solid var(--border);
+}
+
+.heatmap-cell {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.heatmap-trades {
+  display: block;
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* Journal */
+.journal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.journal-entry {
+  padding: 14px 16px;
+  border-left: 3px solid var(--border);
+}
+
+.journal-alert {
+  border-left-color: var(--red);
+}
+
+.journal-warning {
+  border-left-color: var(--gold);
+}
+
+.journal-info {
+  border-left-color: var(--green);
+}
+
+.journal-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.journal-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.journal-message {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Section headers */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+  margin-top: 8px;
+}
+
+.section-title {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+/* Chart container */
+.chart-container {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+/* Deep Analysis button */
+.deep-analysis-btn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 6px 16px;
+  border-radius: var(--radius);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.deep-analysis-btn:hover:not(:disabled) {
+  filter: brightness(1.15);
+}
+
+.deep-analysis-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Spinner */
+.spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Proposals */
+.proposals-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.proposal-card {
+  padding: 16px;
+  border-left: 3px solid var(--accent);
+}
+
+.proposal-approved {
+  border-left-color: var(--green);
+  opacity: 0.7;
+}
+
+.proposal-rejected {
+  border-left-color: var(--red);
+  opacity: 0.5;
+}
+
+.proposal-tested {
+  border-left-color: var(--blue, #4fc3f7);
+}
+
+.proposal-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+.proposal-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  flex: 1;
+}
+
+.proposal-description {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: 0 0 10px 0;
+}
+
+.proposal-changes {
+  background: var(--bg-darker, rgba(0,0,0,0.15));
+  border-radius: calc(var(--radius) - 2px);
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.proposal-change {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 0;
+}
+
+.change-arrow {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.proposal-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.proposal-actions button {
+  padding: 6px 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-approve {
+  background: var(--green);
+  color: #111;
+  border-color: var(--green) !important;
+}
+
+.btn-approve:hover {
+  filter: brightness(1.15);
+}
+
+.btn-reject {
+  background: transparent;
+  color: var(--red);
+  border-color: var(--red) !important;
+}
+
+.btn-reject:hover {
+  background: rgba(255, 82, 82, 0.1);
+}
+
+.btn-backtest {
+  background: transparent;
+  color: var(--accent);
+  border-color: var(--accent) !important;
+}
+
+.btn-backtest:hover {
+  background: rgba(124, 77, 255, 0.1);
+}
+
+.proposal-test-link {
+  margin-top: 8px;
+  font-size: 12px;
+}
+
+.proposal-test-link a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.proposal-test-link a:hover {
+  text-decoration: underline;
+}
+
+/* Badge variants for AI tag */
+.badge-blue {
+  background: rgba(79, 195, 247, 0.15);
+  color: #4fc3f7;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .analysis-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .strategy-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .heatmap-table {
+    font-size: 11px;
+  }
+
+  .heatmap-table th,
+  .heatmap-table td {
+    padding: 6px 6px;
+  }
+}

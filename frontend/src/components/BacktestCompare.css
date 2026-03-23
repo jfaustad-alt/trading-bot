@@ -1,0 +1,38 @@
+/* BacktestCompare styles */
+
+.compare-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.compare-column {
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+.compare-header {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.compare-dates {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  margin-bottom: 12px;
+}
+
+.compare-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.compare-stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}

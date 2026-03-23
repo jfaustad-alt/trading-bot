@@ -1,0 +1,39 @@
+/* BacktestResults styles */
+
+.trade-filters {
+  display: flex;
+  gap: 8px;
+}
+
+.filter-select {
+  padding: 4px 8px;
+  font-size: 12px;
+  min-width: 120px;
+}
+
+.news-cell {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 11px;
+  color: var(--text-secondary);
+  cursor: help;
+}
+
+.sat-out-row {
+  opacity: 0.5;
+  background: var(--red-dim);
+}
+
+/* On mobile, stack the filters */
+@media (max-width: 480px) {
+  .trade-filters {
+    flex-direction: column;
+  }
+
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}

@@ -1,0 +1,40 @@
+.elo-badge {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  text-align: center;
+}
+
+.elo-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.elo-icon {
+  font-size: 20px;
+}
+
+.elo-rank-name {
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--rank-color);
+}
+
+.elo-rating {
+  font-size: 36px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  line-height: 1.1;
+}
+
+.elo-next {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}

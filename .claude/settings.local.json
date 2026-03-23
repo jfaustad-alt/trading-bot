@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pip install:*)",
+      "Bash(python3:*)",
+      "Bash(pip3 install:*)",
+      "Bash(curl -s http://localhost:8080/api/status)",
+      "Bash(pkill -f \"replay_day\")",
+      "Bash(pkill -f \"dashboard\")",
+      "Bash(npm --version)",
+      "Read(//Users/johannes/.nvm/versions/**)",
+      "Bash(brew list:*)",
+      "Bash(npm create:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run:*)",
+      "Bash(python:*)"
+    ]
+  }
+}

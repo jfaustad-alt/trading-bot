@@ -1,0 +1,52 @@
+/* Live dashboard page styles */
+
+.live-header {
+  margin-bottom: 16px;
+}
+
+.live-logo {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: var(--green);
+  margin-bottom: 8px;
+}
+
+.live-status-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.live-updated {
+  font-size: 11px;
+}
+
+/* Market info inside the card */
+.market-info-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Panic button section */
+.panic-section {
+  margin-top: 24px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.panic-btn {
+  width: 100%;
+  max-width: 400px;
+  padding: 14px 24px;
+  font-size: 15px;
+  letter-spacing: 0.1em;
+}
+
+/* On larger screens, make charts side by side look good */
+@media (max-width: 640px) {
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
+}

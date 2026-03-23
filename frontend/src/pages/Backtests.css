@@ -1,0 +1,192 @@
+/* Backtests page styles */
+
+/* --- Form --- */
+.backtest-form {
+  margin-bottom: 12px;
+}
+
+.form-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.form-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.form-input {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  padding: 8px 12px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.form-input:focus {
+  border-color: var(--blue);
+}
+
+/* Date input styling for dark theme */
+.form-input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.7);
+}
+
+@media (max-width: 480px) {
+  .form-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
+/* --- Presets --- */
+.presets-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+@media (min-width: 768px) {
+  .presets-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.preset-btn {
+  text-align: left;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  padding: 10px 12px;
+  transition: all 0.15s;
+}
+
+.preset-btn:hover {
+  border-color: var(--blue);
+  background: var(--bg-card-hover);
+}
+
+.preset-label {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.preset-desc {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.preset-dates {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  margin-top: 4px;
+}
+
+/* --- Running card --- */
+.running-card {
+  margin-bottom: 8px;
+}
+
+.running-name {
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.running-info {
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+
+.running-progress {
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- Backtest list --- */
+.backtest-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.backtest-card {
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.backtest-card-selected {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 1px var(--blue);
+}
+
+.backtest-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.backtest-card-name {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.backtest-card-return {
+  font-size: 18px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+}
+
+.backtest-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+.compare-check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.compare-check input {
+  accent-color: var(--blue);
+}
+
+/* --- Back button --- */
+.back-btn {
+  background: none;
+  border: none;
+  color: var(--blue);
+  font-family: var(--font-body);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 4px 0;
+  margin-bottom: 12px;
+}
+
+.back-btn:hover {
+  text-decoration: underline;
+}
