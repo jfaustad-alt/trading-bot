@@ -32,6 +32,7 @@ export default function Backtests() {
   const [endDate, setEndDate] = useState('')
   const [name, setName] = useState('')
   const [capital, setCapital] = useState(100000)
+  const [market, setMarket] = useState('us')
   const [submitting, setSubmitting] = useState(false)
   const [selectedRunId, setSelectedRunId] = useState(null)
   const [compareMode, setCompareMode] = useState(false)
@@ -65,6 +66,7 @@ export default function Backtests() {
           end_date: endDate,
           name: name || `${startDate} to ${endDate}`,
           capital,
+          market,
         }),
       })
       if (resp.ok) {
@@ -155,6 +157,17 @@ export default function Backtests() {
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. COVID Crash Test"
             />
+          </div>
+          <div className="form-group" style={{ flex: 1 }}>
+            <label className="form-label">Market</label>
+            <select
+              className="form-input"
+              value={market}
+              onChange={(e) => setMarket(e.target.value)}
+            >
+              <option value="us">US (S&P 500)</option>
+              <option value="oslo">Oslo Børs</option>
+            </select>
           </div>
           <div className="form-group" style={{ flex: 1 }}>
             <label className="form-label">Capital</label>

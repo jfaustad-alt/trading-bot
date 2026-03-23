@@ -1,14 +1,15 @@
-"""Gemini AI prompts for the optimizer's refinement loop.
+"""AI prompts for the optimizer's refinement loop (powered by Groq).
 
 After the grid search finds the top parameter combinations, we send
-those results to Google Gemini and ask it to suggest refined parameters.
-Gemini can spot patterns that a simple grid search misses — for example,
-"stop-loss works best between 2-2.5%, so try 2.1% and 2.3%."
+those results to Groq (running Llama 3.3 70B) and ask it to suggest
+refined parameters. The LLM can spot patterns that a simple grid search
+misses — for example, "stop-loss works best between 2-2.5%, so try
+2.1% and 2.3%."
 
 This module handles:
-    1. Building the prompt (formatting grid search results for Gemini).
-    2. Parsing Gemini's response (extracting parameter suggestions).
-    3. The main ask_gemini_for_refinement() function that ties it together.
+    1. Building the prompt (formatting grid search results for the LLM).
+    2. Parsing the LLM's response (extracting parameter suggestions).
+    3. The main ask_ai_for_refinement() function that ties it together.
 """
 
 import json
@@ -17,9 +18,9 @@ from typing import Any
 
 
 def _build_refinement_prompt(top_results: list[dict]) -> str:
-    """Build a prompt asking Gemini to refine trading parameters.
+    """Build a prompt asking the LLM to refine trading parameters.
 
-    We show Gemini the top 10 results from the grid search and ask it
+    We show the LLM the top 10 results from the grid search and ask it
     to find patterns and suggest refined values to try next.
 
     Args:
@@ -86,10 +87,10 @@ Rules:
 """
 
 
-def _parse_gemini_response(response_text: str) -> list[dict[str, Any]]:
-    """Parse Gemini's response into a list of parameter dicts.
+def _parse_ai_response(response_text: str) -> list[dict[str, Any]]:
+    """Parse the LLM's response into a list of parameter dicts.
 
-    Gemini returns JSON with an "analysis" string and a "suggestions"
+    The LLM returns JSON with an "analysis" string and a "suggestions"
     list. We extract just the suggestions (parameter dicts).
 
     Args:
@@ -113,7 +114,7 @@ def _parse_gemini_response(response_text: str) -> list[dict[str, Any]]:
         # Log the AI's analysis.
         analysis = result.get("analysis", "")
         if analysis:
-            print(f"\n  Gemini's analysis: {analysis}\n")
+            print(f"\n  AI analysis: {analysis}\n")
 
         suggestions = result.get("suggestions", [])
 
@@ -140,51 +141,57 @@ def _parse_gemini_response(response_text: str) -> list[dict[str, Any]]:
         return param_dicts
 
     except (json.JSONDecodeError, KeyError, TypeError, ValueError) as e:
-        print(f"  Failed to parse Gemini response: {e}")
+        print(f"  Failed to parse AI response: {e}")
         return []
 
 
 def ask_gemini_for_refinement(
     top_results: list[dict],
 ) -> list[dict[str, Any]]:
-    """Ask Google Gemini to suggest refined parameters based on grid search results.
+    """Ask Groq (Llama 3.3 70B) to suggest refined parameters based on grid search results.
 
     This is the main function called by the optimizer. It:
     1. Builds a prompt from the top grid search results.
-    2. Sends it to Gemini.
+    2. Sends it to Groq's API (running Llama 3.3 70B).
     3. Parses the response into parameter dicts.
+
+    The function name is kept as ask_gemini_for_refinement for backwards
+    compatibility with the optimizer module that imports it by this name.
 
     Args:
         top_results: The top N results from the grid search.
 
     Returns:
         A list of parameter dicts to test. Returns an empty list if
-        Gemini is not configured or the call fails.
+        Groq is not configured or the call fails.
     """
-    # Check for Gemini API key.
-    api_key = os.getenv("GEMINI_API_KEY", "")
+    # Check for Groq API key.
+    api_key = os.getenv("GROQ_API_KEY", "")
     if not api_key:
-        print("  GEMINI_API_KEY not set — skipping AI refinement.")
-        print("  Get a free key at https://aistudio.google.com/apikey")
+        print("  GROQ_API_KEY not set — skipping AI refinement.")
+        print("  Get a free key at https://console.groq.com")
         return []
 
     try:
-        import google.generativeai as genai
+        from groq import Groq
     except ImportError:
-        print("  google-generativeai not installed — skipping AI refinement.")
+        print("  groq package not installed — run: pip install groq")
         return []
 
     # Build the prompt.
     prompt = _build_refinement_prompt(top_results)
 
-    # Call Gemini.
+    # Call Groq (Llama 3.3 70B — fast, free, no region restrictions).
     try:
-        genai.configure(api_key=api_key)
-        model = genai.GenerativeModel("gemini-2.0-flash")
-        response = model.generate_content(prompt)
+        client = Groq(api_key=api_key)
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.3,
+        )
 
-        return _parse_gemini_response(response.text)
+        return _parse_ai_response(response.choices[0].message.content)
 
     except Exception as e:
-        print(f"  Gemini API error: {e}")
+        print(f"  Groq API error: {e}")
         return []

@@ -1,7 +1,7 @@
 """AI-powered deep analysis — LLM trade pattern recognition.
 
-This module sends the bot's performance data to Google Gemini (free tier)
-for deeper pattern recognition. While the rule-based checks in engine.py
+This module sends the bot's performance data to Groq (free tier) for
+deeper pattern recognition. While the rule-based checks in engine.py
 catch obvious issues (win rate below 40%), the LLM can spot subtler
 patterns like:
 
@@ -19,11 +19,11 @@ HOW IT WORKS:
        - Proposals (concrete parameter changes with reasoning)
     4. We parse the response and save to the database
 
-WHY GEMINI?
-    Google Gemini offers a generous free tier (15 requests/minute with
-    Gemini 2.0 Flash). No credit card needed — just get an API key at
-    https://aistudio.google.com/apikey and add it to your .env file
-    as GEMINI_API_KEY.
+WHY GROQ?
+    Groq offers a generous free tier with no region restrictions. It runs
+    open-source models (like Llama 3.3 70B) at very high speed. No credit
+    card needed — just sign up at https://console.groq.com and create a
+    free API key. Add it to your .env file as GROQ_API_KEY.
 
 WHEN TO USE:
     - On-demand: User clicks "Run Deep Analysis" in the Analysis tab
@@ -60,29 +60,29 @@ from config.settings import (
 from database.db import insert_proposal
 
 
-def _get_gemini_model() -> Any:
-    """Create a Google Gemini model client using the API key from environment.
+def _get_groq_client() -> Any:
+    """Create a Groq client using the API key from environment.
 
-    The API key should be set in your .env file as GEMINI_API_KEY.
-    Get a free key at https://aistudio.google.com/apikey
+    Groq is a free, fast LLM inference API that runs open-source models.
+    The API key should be set in your .env file as GROQ_API_KEY.
+    Get a free key at https://console.groq.com
 
     If the key isn't set, this function returns None (and deep analysis
     will be unavailable).
 
     Returns:
-        A google.generativeai.GenerativeModel instance, or None if
-        the key isn't set or the package isn't installed.
+        A groq.Groq client instance, or None if the key isn't set
+        or the package isn't installed.
     """
-    api_key = os.getenv("GEMINI_API_KEY", "")
+    api_key = os.getenv("GROQ_API_KEY", "")
     if not api_key:
         return None
 
     try:
-        import google.generativeai as genai
-        genai.configure(api_key=api_key)
-        return genai.GenerativeModel("gemini-2.0-flash")
+        from groq import Groq
+        return Groq(api_key=api_key)
     except ImportError:
-        # google-generativeai package not installed yet.
+        # groq package not installed yet.
         return None
 
 
@@ -239,31 +239,38 @@ def run_deep_analysis(source: str = "live") -> dict[str, Any]:
             "error": None,
         }
 
-    # Step 2: Check for Gemini API key.
-    model = _get_gemini_model()
-    if model is None:
+    # Step 2: Check for Groq API key.
+    client = _get_groq_client()
+    if client is None:
         return {
             "observations": [{
                 "severity": "warning",
-                "title": "Gemini API not configured",
+                "title": "Groq API not configured",
                 "message": (
-                    "Add GEMINI_API_KEY to your .env file to enable "
+                    "Add GROQ_API_KEY to your .env file to enable "
                     "AI-powered deep analysis. Get a free API key at "
-                    "https://aistudio.google.com/apikey"
+                    "https://console.groq.com"
                 ),
             }],
             "proposals": [],
-            "error": "GEMINI_API_KEY not set",
+            "error": "GROQ_API_KEY not set",
         }
 
-    # Step 3: Build prompt and call Gemini.
+    # Step 3: Build prompt and call Groq (using Llama 3.3 70B).
     prompt = _build_prompt(data)
 
     try:
-        response = model.generate_content(prompt)
+        # Groq uses the same chat completions format as OpenAI.
+        # We send the prompt as a user message and get back the
+        # LLM's response in the assistant message.
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.3,
+        )
 
         # Step 4: Parse the response.
-        response_text = response.text
+        response_text = response.choices[0].message.content
 
         # The LLM should return JSON, but sometimes wraps it in markdown.
         # Strip any markdown code fence if present.
@@ -301,7 +308,7 @@ def run_deep_analysis(source: str = "live") -> dict[str, Any]:
             "observations": [{
                 "severity": "warning",
                 "title": "Analysis parsing error",
-                "message": f"Gemini returned a response but it couldn't be parsed: {e}",
+                "message": f"Groq returned a response but it couldn't be parsed: {e}",
             }],
             "proposals": [],
             "error": f"JSON parse error: {e}",
@@ -311,7 +318,7 @@ def run_deep_analysis(source: str = "live") -> dict[str, Any]:
             "observations": [{
                 "severity": "alert",
                 "title": "Analysis failed",
-                "message": f"Error calling Gemini API: {e}",
+                "message": f"Error calling Groq API: {e}",
             }],
             "proposals": [],
             "error": str(e),
